@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
+import io.apicurio.registry.utils.StringUtil;
 
 /**
  * Note: simple filtering of response content - found on Stack Overflow here:
@@ -186,11 +187,32 @@ public class SpecUrlFilter implements Filter {
      */
     private String generateSpecUrl(HttpServletRequest request) {
         try {
-            String url = request.getRequestURL().toString();
+            String url = resolveUrlFromXForwarded(request, "/openapi?format=JSON");
+            if (url != null) {
+                return url;
+            }
+            
+            url = request.getRequestURL().toString();
             url = new URI(url).resolve("/openapi?format=JSON").toString();
             return url;
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Resolves a URL path relative to the information found in X-Forwarded-Host and X-Forwarded-Proto.
+     * @param path
+     */
+    private String resolveUrlFromXForwarded(HttpServletRequest request, String path) {
+        try {
+            String fproto = request.getHeader("X-City-Mob-Proto");
+            String fhost = request.getHeader("X-City-Mob-Host");
+            if (!StringUtil.isEmpty(fproto) && !StringUtil.isEmpty(fhost)) {
+                return new URI(fproto + "://" + fhost).resolve(path).toString();
+            }
+        } catch (URISyntaxException e) {
+        }
+        return null;
     }
 }

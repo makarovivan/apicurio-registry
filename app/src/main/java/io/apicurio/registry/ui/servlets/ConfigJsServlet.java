@@ -162,8 +162,8 @@ public class ConfigJsServlet extends HttpServlet {
      */
     private String resolveUrlFromXForwarded(HttpServletRequest request, String path) {
         try {
-            String fproto = request.getHeader("X-Forwarded-Proto");
-            String fhost = request.getHeader("X-Forwarded-Host");
+            String fproto = request.getHeader("X-City-Mob-Proto");
+            String fhost = request.getHeader("X-City-Mob-Host");
             if (!StringUtil.isEmpty(fproto) && !StringUtil.isEmpty(fhost)) {
                 return new URI(fproto + "://" + fhost).resolve(path).toString();
             }
